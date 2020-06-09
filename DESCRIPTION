@@ -1,0 +1,16 @@
+Package: KRASdep
+Title: Calculate KRAS-dependency scores
+Version: 0.0.0.1
+Authors@R: 
+    person(given = "Heewon",
+           family = "Seo",
+           role = c("aut", "cre"),
+           email = "Heewon.Seo@uhnresearch.ca")
+Description: This package provides to calculate KRAS-dependency scores
+             (a.k.a., L- and S-scores) published in Cancer Research 
+             (Mottini et al., 2019, PMID: 31492820).
+License: None
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
