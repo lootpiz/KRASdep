@@ -1,0 +1,97 @@
+---
+title: "KRASdep"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{KRASdep}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+## Introduction
+A package to calculate KRAS-dependency (L- and S-scores) 
+via gene expression profiles
+
+## Install the package
+```{r install, eval=FALSE}
+intall.packages("devtools")
+library(devtools)
+devtools::install_github("lootpiz/KRASdep")
+```
+
+## Load the package
+```{r library}
+library(KRASdep)
+```
+
+## Load TCGA-PAAD expression profile
+```{r data}
+# log2(TPM + 1)
+input <- read.table("../data/tcga.paad.hiseqv2", header=T, row.names=1, sep="\t")
+
+# Samples selection (high purity)
+highSamples <- c(
+"TCGA.2J.AAB1.01", "TCGA.2J.AAB6.01", "TCGA.2J.AABA.01", "TCGA.2J.AABE.01",
+"TCGA.2J.AABH.01", "TCGA.2J.AABI.01", "TCGA.2J.AABU.01", "TCGA.2L.AAQA.01",
+"TCGA.2L.AAQE.01", "TCGA.2L.AAQJ.01", "TCGA.2L.AAQL.01", "TCGA.3A.A9I5.01",
+"TCGA.3A.A9IB.01", "TCGA.3A.A9IC.01", "TCGA.3A.A9IH.01", "TCGA.3A.A9IU.01",
+"TCGA.3A.A9IZ.01", "TCGA.3A.A9J0.01", "TCGA.3E.AAAZ.01", "TCGA.F2.6879.01",
+"TCGA.F2.A8YN.01", "TCGA.FB.A545.01", "TCGA.FB.A78T.01", "TCGA.FB.AAPQ.01",
+"TCGA.FB.AAPS.01", "TCGA.FB.AAPU.01", "TCGA.FB.AAPZ.01", "TCGA.FB.AAQ0.01",
+"TCGA.FB.AAQ1.01", "TCGA.FB.AAQ2.01", "TCGA.FB.AAQ3.01", "TCGA.FB.AAQ6.01",
+"TCGA.H6.8124.01", "TCGA.HV.A5A3.01", "TCGA.HV.A5A4.01", "TCGA.HV.A5A6.01",
+"TCGA.HV.A7OL.01", "TCGA.HV.AA8X.01", "TCGA.HZ.7919.01", "TCGA.HZ.7922.01",
+"TCGA.HZ.8005.01", "TCGA.HZ.8317.01", "TCGA.HZ.8636.01", "TCGA.HZ.A49I.01",
+"TCGA.HZ.A77O.01", "TCGA.HZ.A8P0.01", "TCGA.HZ.A8P1.01", "TCGA.HZ.A9TJ.01",
+"TCGA.IB.7644.01", "TCGA.IB.7652.01", "TCGA.IB.7886.01", "TCGA.IB.7890.01",
+"TCGA.IB.8127.01", "TCGA.IB.A5SP.01", "TCGA.IB.A5SS.01", "TCGA.IB.A6UF.01",
+"TCGA.IB.A7LX.01", "TCGA.IB.A7M4.01", "TCGA.IB.AAUN.01", "TCGA.IB.AAUO.01",
+"TCGA.IB.AAUU.01", "TCGA.LB.A7SX.01", "TCGA.LB.A8F3.01", "TCGA.M8.A5N4.01",
+"TCGA.OE.A75W.01", "TCGA.PZ.A5RE.01", "TCGA.Q3.AA2A.01", "TCGA.S4.A8RM.01",
+"TCGA.S4.A8RO.01", "TCGA.S4.A8RP.01", "TCGA.US.A776.01", "TCGA.US.A779.01",
+"TCGA.US.A77E.01", "TCGA.US.A77G.01", "TCGA.XD.AAUL.01", "TCGA.YY.A8LH.01")
+
+input <- input[,which(colnames(input) %in% highSamples)]
+
+# transformation
+rawTPM <- 2^input
+```
+
+## Transform Exp Profile
+```{r transformation}
+# get relative TPM values
+data <- transExp(rawTPM)
+
+# replace gene symbols
+rownames(data)[which(rownames(data) == "IL8")] <- "CXCL8"
+rownames(data)[which(rownames(data) == "C19orf10")] <- "MYDGF"
+rownames(data)[which(rownames(data) == "C1orf96")] <- "CCSAP"
+rownames(data)[which(rownames(data) == "C6orf182")] <- "CEP57L1"
+rownames(data)[which(rownames(data) == "SF4")] <- "SUGP1"
+rownames(data)[which(rownames(data) == "ALS2CR4")] <- "TMEM237"
+```
+
+## Calculate L- and S-scores
+```{r calculation}
+results <- c()
+for(idx in c(1:ncol(data))) {
+	dat <- as.vector(data[,idx])
+	names(dat) <- rownames(data)
+	lscore <- calcLScore(dat)
+	sscore <- calcSScore(dat)
+	res <- c(colnames(data)[idx], lscore, sscore)
+	results <- rbind(results, res)
+}
+```
+
+## Scatter plot
+```{r plotting, fig.width=6, fig.height=6}
+plot(as.numeric(results[,2]), as.numeric(results[,3]), pch=20, 
+     xlab="L-score", ylab="S-score", 
+     main=paste0("TCGA-PAAD, high purity (>=0.33), N=", nrow(results)))
+```
