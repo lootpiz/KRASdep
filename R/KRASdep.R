@@ -54,13 +54,14 @@ calcLScore <- function(dat)
     if (!all(hasUpGenes)) {
         stop(sprintf("Please provide the following genes: %s",
                       paste(upGenes[!hasUpGenes], collapse=", ")))
-    } else if (!all(hasDownGenes)) {
+    } 
+    if (!all(hasDownGenes)) {
         stop(sprintf("Please provide the following genes: %s", 
                       paste(downGenes[!hasUpGenes], collapse=", ")))
-    } else {
-        upGenesIdx <- which(names(dat) %in% upGenes)
-        downGenesIdx <- which(names(dat) %in% downGenes)
-    }
+    } 
+
+    upGenesIdx <- which(names(dat) %in% upGenes)
+    downGenesIdx <- which(names(dat) %in% downGenes)
 
     return(mean(dat[upGenesIdx]) - mean(dat[downGenesIdx])) 
 }
@@ -112,13 +113,14 @@ calcSScore <- function(dat)
     if (!all(hasUpGenes)) {
         stop(sprintf("Please provide the following genes: %s",
                       paste(upGenes[!hasUpGenes], collapse=", ")))
-    } else if (!all(hasDownGenes)) {
+    } 
+    if (!all(hasDownGenes)) {
         stop(sprintf("Please provide the following genes: %s", 
                       paste(downGenes[!hasUpGenes], collapse=", ")))
-    } else {
-        upGenesIdx <- which(names(dat) %in% upGenes)
-        downGenesIdx <- which(names(dat) %in% downGenes)
-    }
+    } 
+
+    upGenesIdx <- which(names(dat) %in% upGenes)
+    downGenesIdx <- which(names(dat) %in% downGenes)
 
     return(mean(dat[upGenesIdx]) - mean(dat[downGenesIdx])) 
 }
