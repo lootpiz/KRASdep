@@ -57,7 +57,7 @@ calcLScore <- function(dat)
     } 
     if (!all(hasDownGenes)) {
         stop(sprintf("Please provide the following genes: %s", 
-                      paste(downGenes[!hasUpGenes], collapse=", ")))
+                      paste(downGenes[!hasDownGenes], collapse=", ")))
     } 
 
     upGenesIdx <- which(names(dat) %in% upGenes)
@@ -116,7 +116,7 @@ calcSScore <- function(dat)
     } 
     if (!all(hasDownGenes)) {
         stop(sprintf("Please provide the following genes: %s", 
-                      paste(downGenes[!hasUpGenes], collapse=", ")))
+                      paste(downGenes[!hasDownGenes], collapse=", ")))
     } 
 
     upGenesIdx <- which(names(dat) %in% upGenes)
