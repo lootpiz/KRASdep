@@ -35,7 +35,7 @@ library(KRASdep)
 input <- read.table("../data/tcga.paad.hiseqv2", header=T, row.names=1, sep="\t")
 
 # Samples selection (high purity)
-highSamples <- c(
+highPuritySamples <- c(
 "TCGA.2J.AAB1.01", "TCGA.2J.AAB6.01", "TCGA.2J.AABA.01", "TCGA.2J.AABE.01",
 "TCGA.2J.AABH.01", "TCGA.2J.AABI.01", "TCGA.2J.AABU.01", "TCGA.2L.AAQA.01",
 "TCGA.2L.AAQE.01", "TCGA.2L.AAQJ.01", "TCGA.2L.AAQL.01", "TCGA.3A.A9I5.01",
@@ -56,7 +56,7 @@ highSamples <- c(
 "TCGA.S4.A8RO.01", "TCGA.S4.A8RP.01", "TCGA.US.A776.01", "TCGA.US.A779.01",
 "TCGA.US.A77E.01", "TCGA.US.A77G.01", "TCGA.XD.AAUL.01", "TCGA.YY.A8LH.01")
 
-input <- input[,which(colnames(input) %in% highSamples)]
+input <- input[,which(colnames(input) %in% highPuritySamples)]
 
 # transformation
 rawTPM <- 2^input
@@ -78,20 +78,39 @@ rownames(data)[which(rownames(data) == "ALS2CR4")] <- "TMEM237"
 
 ## Calculate L- and S-scores
 ```{r calculation}
-results <- c()
-for(idx in c(1:ncol(data))) {
-	dat <- as.vector(data[,idx])
-	names(dat) <- rownames(data)
-	lscore <- calcLScore(dat)
-	sscore <- calcSScore(dat)
-	res <- c(colnames(data)[idx], lscore, sscore)
-	results <- rbind(results, res)
+
+.tryLScore <- function(col, names) {
+    tryCatch({calcLScore(structure(col, .Names=names))},
+             error=function(e) {
+                 return(NA)
+             })
 }
+LScores <- apply(data, 2, FUN=.tryLScore, names=row.names(data))
+
+.trySScore <- function(col, names) {
+    tryCatch({calcSScore(structure(col, .Names=names))},
+             error=function(e) {
+                 return(NA)
+             })
+}
+SScores <- apply(data, 2, FUN=.trySScore, names=row.names(data))
+
+results <- data.frame(LScore = LScores, SScore = SScores)
+
+## Correlation coefficient
+coef <- cor.test(results$LScore, results$SScore, method="spearman")
+p.value <- format(round(coef$p.value, 3), nsmall = 3)
+rho <- format(round(coef$estimate, 3), nsmall = 3)
+
 ```
 
 ## Scatter plot
 ```{r plotting, fig.width=6, fig.height=6}
-plot(as.numeric(results[,2]), as.numeric(results[,3]), pch=20, 
+plot(results$LScore, results$SScore, pch=20,
      xlab="L-score", ylab="S-score", 
-     main=paste0("TCGA-PAAD, high purity (>=0.33), N=", nrow(results)))
+     main=paste0("TCGA-PAAD, high purity (>=0.33), N=",
+     nrow(results)))
+abline(lm(SScore ~ LScore, data=results), col="red")
+legend("bottomright", legend=c(paste0("Spearman rho = ", rho),
+     paste0("P-vlalue = ", p.value)), bty="n")
 ```

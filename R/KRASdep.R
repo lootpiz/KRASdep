@@ -1,6 +1,6 @@
 #' KRASdep
 #'
-#' Calculate L-score
+#' Calculate Lodoba (L)-score
 #'
 #' @param dat \code{vector} A single sample gene expression profile
 #'        with gene symbols in names
@@ -12,7 +12,7 @@
 #'
 #' @export
 #'
-calcLScore <- function(dat)
+calcLScore <- function(dat, exclude = c())
 {
     # UP: KRAS-dependent genes, N=105
     upGenes <- c("ADAM8", "ADRB2", "ANGPTL4", "ARNTL2", "CALM2", 
@@ -48,6 +48,11 @@ calcLScore <- function(dat)
                    "TTC28", "ZNF292", "ZNF441", "ZNF493", "ZNF669", 
                    "ZNF672")
 
+    if(length(exclude) > 0) {
+        upGenes <- upGenes[!upGenes %in% exclude]
+        downGenes <- downGenes[!downGenes %in% exclude]
+    }
+
     hasUpGenes <- is.element(upGenes, names(dat))
     hasDownGenes <- is.element(downGenes, names(dat))
 
@@ -65,7 +70,7 @@ calcLScore <- function(dat)
 
     return(mean(dat[upGenesIdx]) - mean(dat[downGenesIdx])) 
 }
-#' Calculate S-score
+#' Calculate Singh (S)-score
 #'
 #' @param dat \code{vector} A single sample gene expression profile
 #'        with gene symbols in names
@@ -77,7 +82,7 @@ calcLScore <- function(dat)
 #'
 #' @export
 #'
-calcSScore <- function(dat)
+calcSScore <- function(dat, exclude = c())
 {
     # UP: KRAS-dependent genes, N=79
     upGenes <- c("ACTR3C", "ANKRD22", "ATP2C2", "B3GNT3", "BSPRY", 
@@ -106,6 +111,11 @@ calcSScore <- function(dat)
                    "PPARGC1B", "PPP4R2", "RECK", "RHOT1", "RYK", 
                    "SLC1A3", "SLC47A1", "SMARCD3", "SRGN", "SYDE1", 
                    "SYNGR1", "TMEM237", "TUB", "TXNRD1", "WDR35")
+
+    if(length(exclude) > 0) {
+        upGenes <- upGenes[!upGenes %in% exclude]
+        downGenes <- downGenes[!downGenes %in% exclude]
+    }
 
     hasUpGenes <- is.element(upGenes, names(dat))
     hasDownGenes <- is.element(downGenes, names(dat))
